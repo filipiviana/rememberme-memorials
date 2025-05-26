@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Memorial } from '@/types/memorial';
@@ -16,7 +15,8 @@ export const useMemorials = () => {
         .select(`
           *,
           memorial_photos(photo_url),
-          memorial_videos(video_url)
+          memorial_videos(video_url),
+          memorial_audios(audio_url, audio_title, duration)
         `)
         .order('created_at', { ascending: false });
 
@@ -33,6 +33,11 @@ export const useMemorials = () => {
         coverPhoto: memorial.cover_photo_url || '',
         photos: memorial.memorial_photos?.map((p: any) => p.photo_url) || [],
         videos: memorial.memorial_videos?.map((v: any) => v.video_url) || [],
+        audios: memorial.memorial_audios?.map((a: any) => ({
+          url: a.audio_url,
+          title: a.audio_title || 'Sem título',
+          duration: a.duration
+        })) || [],
         slug: memorial.slug,
         createdAt: memorial.created_at.split('T')[0]
       })) || [];
@@ -89,6 +94,18 @@ export const useMemorials = () => {
         }));
 
         await supabase.from('memorial_videos').insert(videoInserts);
+      }
+
+      // Add audios if any
+      if (memorial.audios && memorial.audios.length > 0) {
+        const audioInserts = memorial.audios.map(audio => ({
+          memorial_id: data.id,
+          audio_url: audio.url,
+          audio_title: audio.title,
+          duration: audio.duration
+        }));
+
+        await supabase.from('memorial_audios').insert(audioInserts);
       }
 
       await fetchMemorials();

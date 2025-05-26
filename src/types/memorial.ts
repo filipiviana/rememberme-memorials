@@ -1,4 +1,10 @@
 
+export interface AudioFile {
+  url: string;
+  title: string;
+  duration?: number;
+}
+
 export interface Memorial {
   id: string;
   name: string;
@@ -10,6 +16,7 @@ export interface Memorial {
   coverPhoto: string;
   photos: string[];
   videos: string[];
+  audios?: AudioFile[];
   slug: string;
   createdAt: string;
 }

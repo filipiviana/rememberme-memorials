@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      memorial_audios: {
+        Row: {
+          audio_title: string | null
+          audio_url: string
+          created_at: string
+          duration: number | null
+          id: string
+          memorial_id: string
+        }
+        Insert: {
+          audio_title?: string | null
+          audio_url: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          memorial_id: string
+        }
+        Update: {
+          audio_title?: string | null
+          audio_url?: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          memorial_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_audios_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memorial_photos: {
         Row: {
           created_at: string
