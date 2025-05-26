@@ -53,22 +53,18 @@ const MemorialRequestsManager = () => {
   };
 
   const getStatusBadge = (status: MemorialRequest['status']) => {
-    const statusConfig = {
-      pending: { label: 'Pendente', variant: 'secondary' as const },
-      in_review: { label: 'Em Análise', variant: 'default' as const },
-      approved: { label: 'Aprovado', variant: 'default' as const, className: 'bg-green-600 text-white' },
-      rejected: { label: 'Rejeitado', variant: 'destructive' as const }
-    };
-
-    const config = statusConfig[status];
-    return (
-      <Badge 
-        variant={config.variant} 
-        className={config.className || ''}
-      >
-        {config.label}
-      </Badge>
-    );
+    switch (status) {
+      case 'pending':
+        return <Badge variant="secondary">Pendente</Badge>;
+      case 'in_review':
+        return <Badge variant="default">Em Análise</Badge>;
+      case 'approved':
+        return <Badge variant="default" className="bg-green-600 text-white">Aprovado</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">Rejeitado</Badge>;
+      default:
+        return <Badge variant="secondary">Pendente</Badge>;
+    }
   };
 
   const formatDate = (dateString: string) => {

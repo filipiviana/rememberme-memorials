@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -42,7 +41,8 @@ export const useMemorialRequests = () => {
       // Transform the data to match our interface
       const transformedData: MemorialRequest[] = (data || []).map(item => ({
         ...item,
-        audios: Array.isArray(item.audios) ? item.audios as AudioFile[] : [],
+        status: item.status as MemorialRequest['status'],
+        audios: Array.isArray(item.audios) ? (item.audios as unknown as AudioFile[]) : [],
         photos: item.photos || [],
         videos: item.videos || []
       }));
