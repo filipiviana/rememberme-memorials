@@ -12,8 +12,8 @@ export const useMemorials = () => {
 
   const generateQRCode = async (memorialSlug: string, memorialId: string) => {
     try {
-      // Generate QR code as data URL
-      const qrCodeUrl = `${window.location.origin}/memorial/${memorialSlug}`;
+      // Generate QR code as data URL using the new domain
+      const qrCodeUrl = `https://rememberme.com.br/${memorialSlug}`;
       const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
         width: 512,
         margin: 2,
@@ -96,6 +96,7 @@ export const useMemorials = () => {
         })) || [],
         slug: memorial.slug,
         qr_code_url: memorial.qr_code_url,
+        isPublished: memorial.is_published,
         createdAt: memorial.created_at.split('T')[0]
       })) || [];
 
@@ -105,6 +106,36 @@ export const useMemorials = () => {
       console.error('Error fetching memorials:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const togglePublishMemorial = async (memorialId: string, isPublished: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('memorials')
+        .update({ is_published: isPublished })
+        .eq('id', memorialId);
+
+      if (error) throw error;
+
+      await fetchMemorials();
+      
+      toast({
+        title: isPublished ? "Memorial publicado!" : "Memorial despublicado!",
+        description: isPublished 
+          ? "O memorial agora está visível publicamente"
+          : "O memorial foi removido do acesso público",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error toggling memorial publication:', error);
+      toast({
+        title: "Erro ao alterar status de publicação",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error: error.message };
     }
   };
 
@@ -126,7 +157,8 @@ export const useMemorials = () => {
           biography: memorial.biography,
           profile_photo_url: memorial.profilePhoto,
           cover_photo_url: memorial.coverPhoto,
-          slug: slugData
+          slug: slugData,
+          is_published: memorial.isPublished || false
         })
         .select()
         .single();
@@ -189,6 +221,7 @@ export const useMemorials = () => {
           biography: memorial.biography,
           profile_photo_url: memorial.profilePhoto,
           cover_photo_url: memorial.coverPhoto,
+          is_published: memorial.isPublished,
         })
         .eq('id', memorial.id);
 
@@ -262,6 +295,7 @@ export const useMemorials = () => {
     createMemorial,
     updateMemorial,
     deleteMemorial,
+    togglePublishMemorial,
     refetch: fetchMemorials
   };
 };

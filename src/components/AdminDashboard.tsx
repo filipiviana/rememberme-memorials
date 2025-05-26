@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Eye, Edit, Trash2, QrCode, Users, Calendar, Heart } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Eye, Edit, Trash2, QrCode, Users, Calendar, Heart, Globe, Lock } from 'lucide-react';
 import MemorialLogo from './MemorialLogo';
 import CreateMemorialForm from './CreateMemorialForm';
 import EditMemorialForm from './EditMemorialForm';
@@ -24,7 +25,7 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
   const [editingMemorial, setEditingMemorial] = useState<Memorial | null>(null);
   const [selectedMemorialForQR, setSelectedMemorialForQR] = useState<Memorial | null>(null);
   const { signOut } = useAuth();
-  const { memorials, loading, createMemorial, updateMemorial, deleteMemorial } = useMemorials();
+  const { memorials, loading, createMemorial, updateMemorial, deleteMemorial, togglePublishMemorial } = useMemorials();
   const { stats, loading: statsLoading } = useStats();
   const { generateQRCode, loading: qrLoading } = useQRCode();
 
@@ -88,16 +89,32 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
     }
   };
 
+  const handleTogglePublish = async (memorial: Memorial) => {
+    const newStatus = !memorial.isPublished;
+    await togglePublishMemorial(memorial.id, newStatus);
+  };
+
   const handleGenerateQRCode = async (memorial: Memorial) => {
     if (!memorial.qr_code_url) {
       const qrUrl = await generateQRCode(memorial.slug, memorial.id);
       if (qrUrl) {
-        // Update the memorial object with the new QR code URL
         const updatedMemorial = { ...memorial, qr_code_url: qrUrl };
         setSelectedMemorialForQR(updatedMemorial);
       }
     } else {
       setSelectedMemorialForQR(memorial);
+    }
+  };
+
+  const handleViewPublicMemorial = (memorial: Memorial) => {
+    if (memorial.isPublished) {
+      window.open(`https://rememberme.com.br/${memorial.slug}`, '_blank');
+    } else {
+      toast({
+        title: "Memorial não publicado",
+        description: "Este memorial precisa ser publicado antes de ser visualizado publicamente",
+        variant: "destructive",
+      });
     }
   };
 
@@ -234,47 +251,83 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
                           {new Date(memorial.birthDate).toLocaleDateString('pt-BR')} - {new Date(memorial.deathDate).toLocaleDateString('pt-BR')}
                         </p>
                         <div className="flex items-center space-x-2 mt-1">
-                          <Badge variant="secondary">memorialize.com/{memorial.slug}</Badge>
+                          <Badge variant="secondary">rememberme.com.br/{memorial.slug}</Badge>
                           {memorial.qr_code_url && (
                             <Badge variant="outline" className="text-green-600">QR Code</Badge>
                           )}
+                          <div className="flex items-center space-x-2">
+                            {memorial.isPublished ? (
+                              <Badge variant="default" className="bg-green-600">
+                                <Globe className="h-3 w-3 mr-1" />
+                                Online
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">
+                                <Lock className="h-3 w-3 mr-1" />
+                                Offline
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onViewMemorial(memorial)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleGenerateQRCode(memorial)}
-                        disabled={qrLoading}
-                      >
-                        <QrCode className="h-4 w-4 mr-1" />
-                        QR Code
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setEditingMemorial(memorial)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteMemorial(memorial.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Excluir
-                      </Button>
+                    <div className="flex items-center space-x-4">
+                      {/* Publication Toggle */}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">
+                          {memorial.isPublished ? 'Online' : 'Offline'}
+                        </span>
+                        <Switch
+                          checked={memorial.isPublished}
+                          onCheckedChange={() => handleTogglePublish(memorial)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onViewMemorial(memorial)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver
+                        </Button>
+                        {memorial.isPublished && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewPublicMemorial(memorial)}
+                          >
+                            <Globe className="h-4 w-4 mr-1" />
+                            Público
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleGenerateQRCode(memorial)}
+                          disabled={qrLoading}
+                        >
+                          <QrCode className="h-4 w-4 mr-1" />
+                          QR Code
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setEditingMemorial(memorial)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteMemorial(memorial.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}

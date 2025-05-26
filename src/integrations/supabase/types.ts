@@ -139,6 +139,7 @@ export type Database = {
           created_at: string
           death_date: string
           id: string
+          is_published: boolean
           name: string
           profile_photo_url: string | null
           qr_code_url: string | null
@@ -153,6 +154,7 @@ export type Database = {
           created_at?: string
           death_date: string
           id?: string
+          is_published?: boolean
           name: string
           profile_photo_url?: string | null
           qr_code_url?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           created_at?: string
           death_date?: string
           id?: string
+          is_published?: boolean
           name?: string
           profile_photo_url?: string | null
           qr_code_url?: string | null

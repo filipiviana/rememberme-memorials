@@ -19,5 +19,6 @@ export interface Memorial {
   audios?: AudioFile[];
   slug: string;
   qr_code_url?: string;
+  isPublished: boolean;
   createdAt: string;
 }
