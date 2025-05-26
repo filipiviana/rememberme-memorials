@@ -73,6 +73,69 @@ export type Database = {
           },
         ]
       }
+      memorial_requests: {
+        Row: {
+          audios: Json | null
+          biography: string | null
+          birth_date: string
+          cover_photo_url: string | null
+          created_at: string
+          death_date: string
+          id: string
+          name: string
+          notes: string | null
+          photos: string[] | null
+          profile_photo_url: string | null
+          requester_email: string
+          requester_name: string
+          requester_phone: string | null
+          status: string
+          tribute: string | null
+          updated_at: string
+          videos: string[] | null
+        }
+        Insert: {
+          audios?: Json | null
+          biography?: string | null
+          birth_date: string
+          cover_photo_url?: string | null
+          created_at?: string
+          death_date: string
+          id?: string
+          name: string
+          notes?: string | null
+          photos?: string[] | null
+          profile_photo_url?: string | null
+          requester_email: string
+          requester_name: string
+          requester_phone?: string | null
+          status?: string
+          tribute?: string | null
+          updated_at?: string
+          videos?: string[] | null
+        }
+        Update: {
+          audios?: Json | null
+          biography?: string | null
+          birth_date?: string
+          cover_photo_url?: string | null
+          created_at?: string
+          death_date?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          photos?: string[] | null
+          profile_photo_url?: string | null
+          requester_email?: string
+          requester_name?: string
+          requester_phone?: string | null
+          status?: string
+          tribute?: string | null
+          updated_at?: string
+          videos?: string[] | null
+        }
+        Relationships: []
+      }
       memorial_videos: {
         Row: {
           created_at: string
