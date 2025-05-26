@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useQRCode } from '@/hooks/useQRCode';
 import { AudioFile } from '@/types/memorial';
 
 export interface MemorialRequest {
@@ -27,6 +28,7 @@ export interface MemorialRequest {
 export const useMemorialRequests = () => {
   const [requests, setRequests] = useState<MemorialRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const { generateQRCode } = useQRCode();
 
   const fetchRequests = async () => {
     try {
@@ -169,9 +171,19 @@ export const useMemorialRequests = () => {
         if (audiosError) console.error('Error adding audios:', audiosError);
       }
 
+      // Generate QR code for the memorial
+      console.log('Generating QR code for memorial:', memorial.slug, memorial.id);
+      const qrCodeUrl = await generateQRCode(memorial.slug, memorial.id);
+      
+      if (qrCodeUrl) {
+        console.log('QR code generated successfully:', qrCodeUrl);
+      } else {
+        console.error('Failed to generate QR code');
+      }
+
       toast({
         title: "Memorial criado com sucesso!",
-        description: `O memorial de ${request.name} foi criado e está disponível para publicação.`,
+        description: `O memorial de ${request.name} foi criado com QR code e está disponível para publicação.`,
       });
 
       return { error: null, memorial };
