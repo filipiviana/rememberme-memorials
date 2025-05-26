@@ -1,12 +1,13 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Memorial } from '@/types/memorial';
+import { useQRCode } from '@/hooks/useQRCode';
 
 export const useMemorials = () => {
   const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { generateQRCode } = useQRCode();
 
   const fetchMemorials = async () => {
     try {
@@ -40,6 +41,7 @@ export const useMemorials = () => {
           duration: a.duration
         })) || [],
         slug: memorial.slug,
+        qr_code_url: memorial.qr_code_url,
         createdAt: memorial.created_at.split('T')[0]
       })) || [];
 
@@ -108,6 +110,9 @@ export const useMemorials = () => {
 
         await supabase.from('memorial_audios').insert(audioInserts);
       }
+
+      // Generate QR Code automatically
+      await generateQRCode(slugData, data.id);
 
       await fetchMemorials();
       return { data, error: null };

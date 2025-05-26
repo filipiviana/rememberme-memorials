@@ -7,10 +7,12 @@ import { Plus, Eye, Edit, Trash2, QrCode, Users, Calendar, Heart } from 'lucide-
 import MemorialLogo from './MemorialLogo';
 import CreateMemorialForm from './CreateMemorialForm';
 import EditMemorialForm from './EditMemorialForm';
+import QRCodeModal from './QRCodeModal';
 import { Memorial } from '../types/memorial';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemorials } from '@/hooks/useMemorials';
 import { useStats } from '@/hooks/useStats';
+import { useQRCode } from '@/hooks/useQRCode';
 import { toast } from '@/hooks/use-toast';
 
 interface AdminDashboardProps {
@@ -20,9 +22,11 @@ interface AdminDashboardProps {
 const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingMemorial, setEditingMemorial] = useState<Memorial | null>(null);
+  const [selectedMemorialForQR, setSelectedMemorialForQR] = useState<Memorial | null>(null);
   const { signOut } = useAuth();
   const { memorials, loading, createMemorial, updateMemorial, deleteMemorial } = useMemorials();
   const { stats, loading: statsLoading } = useStats();
+  const { generateQRCode, loading: qrLoading } = useQRCode();
 
   const handleLogout = async () => {
     await signOut();
@@ -81,6 +85,19 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
         title: "Memorial excluído",
         description: "O memorial foi removido com sucesso",
       });
+    }
+  };
+
+  const handleGenerateQRCode = async (memorial: Memorial) => {
+    if (!memorial.qr_code_url) {
+      const qrUrl = await generateQRCode(memorial.slug, memorial.id);
+      if (qrUrl) {
+        // Update the memorial object with the new QR code URL
+        const updatedMemorial = { ...memorial, qr_code_url: qrUrl };
+        setSelectedMemorialForQR(updatedMemorial);
+      }
+    } else {
+      setSelectedMemorialForQR(memorial);
     }
   };
 
@@ -218,6 +235,9 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
                         </p>
                         <div className="flex items-center space-x-2 mt-1">
                           <Badge variant="secondary">memorialize.com/{memorial.slug}</Badge>
+                          {memorial.qr_code_url && (
+                            <Badge variant="outline" className="text-green-600">QR Code</Badge>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -230,7 +250,12 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
                         <Eye className="h-4 w-4 mr-1" />
                         Ver
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleGenerateQRCode(memorial)}
+                        disabled={qrLoading}
+                      >
                         <QrCode className="h-4 w-4 mr-1" />
                         QR Code
                       </Button>
@@ -258,6 +283,15 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
           </CardContent>
         </Card>
       </main>
+
+      {/* QR Code Modal */}
+      {selectedMemorialForQR && (
+        <QRCodeModal
+          memorial={selectedMemorialForQR}
+          isOpen={!!selectedMemorialForQR}
+          onClose={() => setSelectedMemorialForQR(null)}
+        />
+      )}
     </div>
   );
 };

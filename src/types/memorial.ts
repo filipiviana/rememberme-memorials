@@ -18,5 +18,6 @@ export interface Memorial {
   videos: string[];
   audios?: AudioFile[];
   slug: string;
+  qr_code_url?: string;
   createdAt: string;
 }

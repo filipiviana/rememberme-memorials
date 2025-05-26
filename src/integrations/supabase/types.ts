@@ -141,6 +141,7 @@ export type Database = {
           id: string
           name: string
           profile_photo_url: string | null
+          qr_code_url: string | null
           slug: string
           tribute: string | null
           updated_at: string
@@ -154,6 +155,7 @@ export type Database = {
           id?: string
           name: string
           profile_photo_url?: string | null
+          qr_code_url?: string | null
           slug: string
           tribute?: string | null
           updated_at?: string
@@ -167,6 +169,7 @@ export type Database = {
           id?: string
           name?: string
           profile_photo_url?: string | null
+          qr_code_url?: string | null
           slug?: string
           tribute?: string | null
           updated_at?: string
