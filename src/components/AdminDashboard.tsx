@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Eye, Edit, Trash2, QrCode, Users, Calendar, Heart } from 'lucide-react';
 import MemorialLogo from './MemorialLogo';
 import CreateMemorialForm from './CreateMemorialForm';
+import EditMemorialForm from './EditMemorialForm';
 import { Memorial } from '../types/memorial';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemorials } from '@/hooks/useMemorials';
@@ -18,8 +19,9 @@ interface AdminDashboardProps {
 
 const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingMemorial, setEditingMemorial] = useState<Memorial | null>(null);
   const { signOut } = useAuth();
-  const { memorials, loading, createMemorial, deleteMemorial } = useMemorials();
+  const { memorials, loading, createMemorial, updateMemorial, deleteMemorial } = useMemorials();
   const { stats, loading: statsLoading } = useStats();
 
   const handleLogout = async () => {
@@ -47,6 +49,23 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
     }
   };
 
+  const handleUpdateMemorial = async (memorial: Memorial) => {
+    const { error } = await updateMemorial(memorial);
+    if (error) {
+      toast({
+        title: "Erro ao atualizar memorial",
+        description: error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Memorial atualizado com sucesso!",
+        description: `O memorial de ${memorial.name} foi atualizado.`,
+      });
+      setEditingMemorial(null);
+    }
+  };
+
   const handleDeleteMemorial = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este memorial?')) return;
     
@@ -70,6 +89,16 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
       <CreateMemorialForm
         onSubmit={handleCreateMemorial}
         onCancel={() => setShowCreateForm(false)}
+      />
+    );
+  }
+
+  if (editingMemorial) {
+    return (
+      <EditMemorialForm
+        memorial={editingMemorial}
+        onSubmit={handleUpdateMemorial}
+        onCancel={() => setEditingMemorial(null)}
       />
     );
   }
@@ -205,7 +234,11 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
                         <QrCode className="h-4 w-4 mr-1" />
                         QR Code
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setEditingMemorial(memorial)}
+                      >
                         <Edit className="h-4 w-4 mr-1" />
                         Editar
                       </Button>

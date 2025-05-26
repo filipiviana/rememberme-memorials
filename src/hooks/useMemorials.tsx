@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Memorial } from '@/types/memorial';
@@ -116,6 +117,64 @@ export const useMemorials = () => {
     }
   };
 
+  const updateMemorial = async (memorial: Memorial) => {
+    try {
+      // Update main memorial data
+      const { error: memorialError } = await supabase
+        .from('memorials')
+        .update({
+          name: memorial.name,
+          birth_date: memorial.birthDate,
+          death_date: memorial.deathDate,
+          tribute: memorial.tribute,
+          biography: memorial.biography,
+          profile_photo_url: memorial.profilePhoto,
+          cover_photo_url: memorial.coverPhoto,
+        })
+        .eq('id', memorial.id);
+
+      if (memorialError) throw memorialError;
+
+      // Delete existing photos and add new ones
+      await supabase.from('memorial_photos').delete().eq('memorial_id', memorial.id);
+      if (memorial.photos.length > 0) {
+        const photoInserts = memorial.photos.map(photo => ({
+          memorial_id: memorial.id,
+          photo_url: photo
+        }));
+        await supabase.from('memorial_photos').insert(photoInserts);
+      }
+
+      // Delete existing videos and add new ones
+      await supabase.from('memorial_videos').delete().eq('memorial_id', memorial.id);
+      if (memorial.videos.length > 0) {
+        const videoInserts = memorial.videos.map(video => ({
+          memorial_id: memorial.id,
+          video_url: video
+        }));
+        await supabase.from('memorial_videos').insert(videoInserts);
+      }
+
+      // Delete existing audios and add new ones
+      await supabase.from('memorial_audios').delete().eq('memorial_id', memorial.id);
+      if (memorial.audios && memorial.audios.length > 0) {
+        const audioInserts = memorial.audios.map(audio => ({
+          memorial_id: memorial.id,
+          audio_url: audio.url,
+          audio_title: audio.title,
+          duration: audio.duration
+        }));
+        await supabase.from('memorial_audios').insert(audioInserts);
+      }
+
+      await fetchMemorials();
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error updating memorial:', error);
+      return { error: error.message };
+    }
+  };
+
   const deleteMemorial = async (id: string) => {
     try {
       const { error } = await supabase
@@ -142,6 +201,7 @@ export const useMemorials = () => {
     loading,
     error,
     createMemorial,
+    updateMemorial,
     deleteMemorial,
     refetch: fetchMemorials
   };
