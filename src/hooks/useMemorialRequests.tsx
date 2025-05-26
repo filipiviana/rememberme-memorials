@@ -38,7 +38,16 @@ export const useMemorialRequests = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData: MemorialRequest[] = (data || []).map(item => ({
+        ...item,
+        audios: Array.isArray(item.audios) ? item.audios as AudioFile[] : [],
+        photos: item.photos || [],
+        videos: item.videos || []
+      }));
+      
+      setRequests(transformedData);
     } catch (error) {
       console.error('Error fetching memorial requests:', error);
       toast({

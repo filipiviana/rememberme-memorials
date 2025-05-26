@@ -56,13 +56,16 @@ const MemorialRequestsManager = () => {
     const statusConfig = {
       pending: { label: 'Pendente', variant: 'secondary' as const },
       in_review: { label: 'Em Análise', variant: 'default' as const },
-      approved: { label: 'Aprovado', variant: 'default' as const, className: 'bg-green-600' },
+      approved: { label: 'Aprovado', variant: 'default' as const, className: 'bg-green-600 text-white' },
       rejected: { label: 'Rejeitado', variant: 'destructive' as const }
     };
 
     const config = statusConfig[status];
     return (
-      <Badge variant={config.variant} className={config.className}>
+      <Badge 
+        variant={config.variant} 
+        className={config.className || ''}
+      >
         {config.label}
       </Badge>
     );

@@ -63,7 +63,7 @@ const CreateMemorialRequest = () => {
           cover_photo_url: formData.coverPhoto,
           photos,
           videos,
-          audios,
+          audios: audios as any, // Cast to 'any' to satisfy the Json type
           requester_name: formData.requesterName,
           requester_email: formData.requesterEmail,
           requester_phone: formData.requesterPhone
