@@ -9,13 +9,153 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      memorial_photos: {
+        Row: {
+          created_at: string
+          id: string
+          memorial_id: string
+          photo_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          memorial_id: string
+          photo_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          memorial_id?: string
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_photos_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorial_videos: {
+        Row: {
+          created_at: string
+          id: string
+          memorial_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          memorial_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          memorial_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_videos_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorial_visits: {
+        Row: {
+          id: string
+          ip_address: unknown | null
+          memorial_id: string
+          visited_at: string
+        }
+        Insert: {
+          id?: string
+          ip_address?: unknown | null
+          memorial_id: string
+          visited_at?: string
+        }
+        Update: {
+          id?: string
+          ip_address?: unknown | null
+          memorial_id?: string
+          visited_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_visits_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorials: {
+        Row: {
+          biography: string | null
+          birth_date: string
+          cover_photo_url: string | null
+          created_at: string
+          death_date: string
+          id: string
+          name: string
+          profile_photo_url: string | null
+          slug: string
+          tribute: string | null
+          updated_at: string
+        }
+        Insert: {
+          biography?: string | null
+          birth_date: string
+          cover_photo_url?: string | null
+          created_at?: string
+          death_date: string
+          id?: string
+          name: string
+          profile_photo_url?: string | null
+          slug: string
+          tribute?: string | null
+          updated_at?: string
+        }
+        Update: {
+          biography?: string | null
+          birth_date?: string
+          cover_photo_url?: string | null
+          created_at?: string
+          death_date?: string
+          id?: string
+          name?: string
+          profile_photo_url?: string | null
+          slug?: string
+          tribute?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_slug: {
+        Args: { name_text: string }
+        Returns: string
+      }
+      get_memorial_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_memorials: number
+          total_visits: number
+          visits_this_month: number
+          memorials_this_month: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

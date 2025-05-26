@@ -7,38 +7,62 @@ import { Plus, Eye, Edit, Trash2, QrCode, Users, Calendar, Heart } from 'lucide-
 import MemorialLogo from './MemorialLogo';
 import CreateMemorialForm from './CreateMemorialForm';
 import { Memorial } from '../types/memorial';
+import { useAuth } from '@/hooks/useAuth';
+import { useMemorials } from '@/hooks/useMemorials';
+import { useStats } from '@/hooks/useStats';
+import { toast } from '@/hooks/use-toast';
 
 interface AdminDashboardProps {
-  onLogout: () => void;
   onViewMemorial: (memorial: Memorial) => void;
 }
 
-const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
+const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [memorials, setMemorials] = useState<Memorial[]>([
-    {
-      id: '1',
-      name: 'Anna Luiza Nicolau Evangelista',
-      birthDate: '1998-05-06',
-      deathDate: '2020-12-05',
-      tribute: 'Que ela viva nesse mundo até cumprir o mais propósito. Anna Luiza Nicolau Evangelista',
-      profilePhoto: 'https://images.unsplash.com/photo-1494790108755-2616b612b788?w=400',
-      coverPhoto: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800',
-      biography: 'Uma pessoa especial que tocou muitas vidas...',
-      photos: [],
-      videos: [],
-      slug: 'anna-luiza-nicolau-evangelista',
-      createdAt: '2024-01-15'
-    }
-  ]);
+  const { signOut } = useAuth();
+  const { memorials, loading, createMemorial, deleteMemorial } = useMemorials();
+  const { stats, loading: statsLoading } = useStats();
 
-  const handleCreateMemorial = (memorial: Memorial) => {
-    setMemorials(prev => [...prev, memorial]);
-    setShowCreateForm(false);
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso",
+    });
   };
 
-  const handleDeleteMemorial = (id: string) => {
-    setMemorials(prev => prev.filter(m => m.id !== id));
+  const handleCreateMemorial = async (memorial: Memorial) => {
+    const { error } = await createMemorial(memorial);
+    if (error) {
+      toast({
+        title: "Erro ao criar memorial",
+        description: error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Memorial criado com sucesso!",
+        description: `O memorial de ${memorial.name} foi criado e está disponível.`,
+      });
+      setShowCreateForm(false);
+    }
+  };
+
+  const handleDeleteMemorial = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este memorial?')) return;
+    
+    const { error } = await deleteMemorial(id);
+    if (error) {
+      toast({
+        title: "Erro ao excluir memorial",
+        description: error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Memorial excluído",
+        description: "O memorial foi removido com sucesso",
+      });
+    }
   };
 
   if (showCreateForm) {
@@ -59,7 +83,7 @@ const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
             <MemorialLogo />
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Administrador</span>
-              <Button variant="outline" onClick={onLogout}>
+              <Button variant="outline" onClick={handleLogout}>
                 Sair
               </Button>
             </div>
@@ -76,7 +100,9 @@ const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total de Memoriais</p>
-                  <p className="text-3xl font-bold text-gray-900">{memorials.length}</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {statsLoading ? '...' : stats.totalMemorials}
+                  </p>
                 </div>
                 <Heart className="h-8 w-8 text-red-500" />
               </div>
@@ -87,7 +113,9 @@ const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Visitantes Este Mês</p>
-                  <p className="text-3xl font-bold text-gray-900">1,234</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {statsLoading ? '...' : stats.visitsThisMonth}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-blue-500" />
               </div>
@@ -98,7 +126,9 @@ const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Criados Este Mês</p>
-                  <p className="text-3xl font-bold text-gray-900">5</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {statsLoading ? '...' : stats.memorialsThisMonth}
+                  </p>
                 </div>
                 <Calendar className="h-8 w-8 text-green-500" />
               </div>
@@ -108,8 +138,10 @@ const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">QR Codes Gerados</p>
-                  <p className="text-3xl font-bold text-gray-900">12</p>
+                  <p className="text-sm font-medium text-gray-600">Total de Visitas</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {statsLoading ? '...' : stats.totalVisits}
+                  </p>
                 </div>
                 <QrCode className="h-8 w-8 text-purple-500" />
               </div>
@@ -134,54 +166,62 @@ const AdminDashboard = ({ onLogout, onViewMemorial }: AdminDashboardProps) => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {memorials.map((memorial) => (
-                <div key={memorial.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={memorial.profilePhoto}
-                      alt={memorial.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{memorial.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        {new Date(memorial.birthDate).toLocaleDateString('pt-BR')} - {new Date(memorial.deathDate).toLocaleDateString('pt-BR')}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="secondary">memorialize.com/{memorial.slug}</Badge>
+            {loading ? (
+              <div className="text-center py-8">Carregando memoriais...</div>
+            ) : memorials.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Nenhum memorial encontrado. Crie o primeiro!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {memorials.map((memorial) => (
+                  <div key={memorial.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={memorial.profilePhoto || 'https://images.unsplash.com/photo-1494790108755-2616b612b788?w=400'}
+                        alt={memorial.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{memorial.name}</h3>
+                        <p className="text-sm text-gray-600">
+                          {new Date(memorial.birthDate).toLocaleDateString('pt-BR')} - {new Date(memorial.deathDate).toLocaleDateString('pt-BR')}
+                        </p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="secondary">memorialize.com/{memorial.slug}</Badge>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onViewMemorial(memorial)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Ver
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <QrCode className="h-4 w-4 mr-1" />
+                        QR Code
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteMemorial(memorial.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Excluir
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewMemorial(memorial)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <QrCode className="h-4 w-4 mr-1" />
-                      QR Code
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteMemorial(memorial.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>

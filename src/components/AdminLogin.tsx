@@ -5,35 +5,47 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import MemorialLogo from './MemorialLogo';
 
-interface AdminLoginProps {
-  onLogin: () => void;
-}
-
-const AdminLogin = ({ onLogin }: AdminLoginProps) => {
+const AdminLogin = () => {
   const [credentials, setCredentials] = useState({
-    username: '',
+    email: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simulação de login - em produção conectaria com autenticação real
-    if (credentials.username === 'admin' && credentials.password === 'memorial2024') {
+    if (!credentials.email || !credentials.password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha email e senha",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    const { error } = await signIn(credentials.email, credentials.password);
+    
+    if (error) {
+      toast({
+        title: "Erro de autenticação",
+        description: error.message || "Credenciais inválidas. Tente novamente.",
+        variant: "destructive",
+      });
+    } else {
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo ao painel administrativo",
       });
-      onLogin();
-    } else {
-      toast({
-        title: "Erro de autenticação",
-        description: "Credenciais inválidas. Tente novamente.",
-        variant: "destructive",
-      });
     }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -51,14 +63,15 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuário</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={credentials.username}
-                onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
-                placeholder="Digite seu usuário"
+                id="email"
+                type="email"
+                value={credentials.email}
+                onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Digite seu email"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -70,14 +83,15 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
                 onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
                 placeholder="Digite sua senha"
                 required
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Entrar
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
           <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
-            <strong>Demo:</strong> usuário: admin / senha: memorial2024
+            <strong>Nota:</strong> Use suas credenciais do Supabase ou crie uma conta admin
           </div>
         </CardContent>
       </Card>
