@@ -66,6 +66,8 @@ const FileUpload = ({
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    console.log('Files selected:', files.length, 'Multiple mode:', multiple);
+
     // Validate file sizes
     for (const file of Array.from(files)) {
       if (file.size > maxSize) {
@@ -82,7 +84,9 @@ const FileUpload = ({
     setUploadProgress(0);
 
     try {
-      if (multiple && files.length > 1) {
+      // CORREÇÃO: Se multiple=true, sempre usar onMultipleUpload, independente da quantidade
+      if (multiple) {
+        console.log('Using multiple upload mode for', files.length, 'file(s)');
         const urls: string[] = [];
         for (let i = 0; i < files.length; i++) {
           console.log(`Uploading file ${i + 1} of ${files.length}: ${files[i].name}`);
@@ -90,10 +94,13 @@ const FileUpload = ({
           urls.push(url);
           setUploadProgress(((i + 1) / files.length) * 100);
         }
+        
+        console.log('All files uploaded, calling onMultipleUpload with URLs:', urls);
         onMultipleUpload?.(urls);
+        
         toast({
           title: "Upload concluído",
-          description: `${files.length} arquivos enviados com sucesso`,
+          description: `${files.length} arquivo(s) enviado(s) com sucesso`,
         });
       } else {
         console.log(`Uploading single file: ${files[0].name}`);

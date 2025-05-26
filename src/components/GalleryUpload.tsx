@@ -16,13 +16,23 @@ const GalleryUpload = ({ photos, onPhotosChange }: GalleryUploadProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleAddPhotos = (newUrls: string[]) => {
-    onPhotosChange([...photos, ...newUrls]);
+    console.log('GalleryUpload: Received new URLs:', newUrls);
+    console.log('GalleryUpload: Current photos:', photos);
+    
+    const updatedPhotos = [...photos, ...newUrls];
+    console.log('GalleryUpload: Updated photos array:', updatedPhotos);
+    
+    onPhotosChange(updatedPhotos);
   };
 
   const handleRemovePhoto = (index: number) => {
+    console.log('GalleryUpload: Removing photo at index:', index);
     const updatedPhotos = photos.filter((_, i) => i !== index);
+    console.log('GalleryUpload: Photos after removal:', updatedPhotos);
     onPhotosChange(updatedPhotos);
   };
+
+  console.log('GalleryUpload: Rendering with photos:', photos);
 
   return (
     <div className="space-y-4">
@@ -73,6 +83,12 @@ const GalleryUpload = ({ photos, onPhotosChange }: GalleryUploadProps) => {
             </div>
           ))}
         </div>
+      )}
+      
+      {photos.length === 0 && (
+        <p className="text-sm text-gray-500 text-center py-4">
+          Nenhuma foto adicionada à galeria ainda.
+        </p>
       )}
     </div>
   );
