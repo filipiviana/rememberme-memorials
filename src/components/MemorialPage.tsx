@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Share2, Heart, Calendar, MapPin, Play } from 'lucide-react';
+import { ArrowLeft, Share2, Calendar, Play, Pause } from 'lucide-react';
 import { Memorial } from '../types/memorial';
 import MemorialLogo from './MemorialLogo';
 
@@ -13,6 +13,7 @@ interface MemorialPageProps {
 
 const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
   const [selectedTab, setSelectedTab] = useState('historia');
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -26,6 +27,10 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
     const birth = new Date(birthDate);
     const death = new Date(deathDate);
     return death.getFullYear() - birth.getFullYear();
+  };
+
+  const toggleAudio = (audioId: string) => {
+    setPlayingAudio(playingAudio === audioId ? null : audioId);
   };
 
   return (
@@ -49,40 +54,65 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
         </div>
       </header>
 
-      {/* Memorial Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Cover Photo */}
-        <div className="relative h-64 md:h-80 rounded-b-lg overflow-hidden">
+      {/* Cover Photo */}
+      <div className="relative h-64 md:h-80 overflow-hidden">
+        {memorial.coverPhoto ? (
           <img
             src={memorial.coverPhoto}
             alt="Foto de capa"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      </div>
 
-        {/* Profile Section */}
-        <div className="relative -mt-16 mb-8">
-          <div className="flex flex-col md:flex-row items-center md:items-end space-y-4 md:space-y-0 md:space-x-6 px-6">
-            <img
-              src={memorial.profilePhoto}
-              alt={memorial.name}
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-            />
-            <div className="text-center md:text-left text-white md:mb-4">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{memorial.name}</h1>
-              <div className="flex items-center justify-center md:justify-start space-x-4 text-sm">
-                <span className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {formatDate(memorial.birthDate)}
-                </span>
-                <span>•</span>
-                <span className="flex items-center">
-                  <Heart className="h-4 w-4 mr-1" />
-                  {formatDate(memorial.deathDate)}
-                </span>
+      {/* Memorial Header */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative -mt-20 mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+              {/* Profile Photo */}
+              <div className="relative">
+                <img
+                  src={memorial.profilePhoto || '/placeholder.svg'}
+                  alt={memorial.name}
+                  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                />
               </div>
-              <p className="text-lg mt-2 opacity-90">{memorial.tribute}</p>
+              
+              {/* Memorial Info */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start mb-2">
+                  <span className="text-sm text-gray-500 mr-2">Em memória de</span>
+                  <Share2 className="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-600" />
+                </div>
+                
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  {memorial.name}
+                </h1>
+                
+                {/* Birth and Death Dates */}
+                <div className="flex flex-col md:flex-row items-center justify-center md:justify-start space-y-2 md:space-y-0 md:space-x-8 mb-4">
+                  <div className="flex items-center text-gray-600">
+                    <div className="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                    <span className="text-sm">{formatDate(memorial.birthDate)}</span>
+                  </div>
+                  
+                  <div className="flex items-center text-gray-600">
+                    <div className="w-3 h-3 bg-gray-400 mr-2" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                    <span className="text-sm">{formatDate(memorial.deathDate)}</span>
+                  </div>
+                </div>
+                
+                {/* Tribute */}
+                {memorial.tribute && (
+                  <p className="text-lg text-gray-700 max-w-2xl">
+                    {memorial.tribute}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -128,23 +158,23 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
               <Card>
                 <CardContent className="p-6">
                   <h2 className="text-2xl font-semibold mb-6">Galeria de Memórias</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Sample photos grid - like the uploaded image */}
-                    {Array.from({ length: 15 }, (_, i) => (
-                      <div key={i} className="relative group cursor-pointer">
-                        <img
-                          src={`https://images.unsplash.com/photo-149479010875${i}?w=400&h=400&fit=crop`}
-                          alt={`Memória ${i + 1}`}
-                          className="w-full h-32 object-cover rounded-lg transition-transform group-hover:scale-105"
-                        />
-                        {i % 4 === 0 && (
-                          <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Play className="h-8 w-8 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  {memorial.photos && memorial.photos.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {memorial.photos.map((photo, index) => (
+                        <div key={index} className="relative group cursor-pointer">
+                          <img
+                            src={photo}
+                            alt={`Memória ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Nenhuma foto foi adicionada ainda.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -153,16 +183,46 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
           {selectedTab === 'audio' && (
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Mensagem de Áudio</h2>
-                <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Play className="h-8 w-8 text-white" />
-                    </div>
-                    <p className="text-gray-600">Reproduzir mensagem especial</p>
-                    <p className="text-sm text-gray-500 mt-2">Duração: 2:30</p>
+                <h2 className="text-2xl font-semibold mb-4">Mensagens de Áudio</h2>
+                {memorial.audios && memorial.audios.length > 0 ? (
+                  <div className="space-y-4">
+                    {memorial.audios.map((audio, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => toggleAudio(audio.url)}
+                            className="w-12 h-12 rounded-full"
+                          >
+                            {playingAudio === audio.url ? (
+                              <Pause className="h-5 w-5" />
+                            ) : (
+                              <Play className="h-5 w-5" />
+                            )}
+                          </Button>
+                          <div>
+                            <p className="font-medium">{audio.title}</p>
+                            {audio.duration && (
+                              <p className="text-sm text-gray-500">
+                                Duração: {Math.floor(audio.duration / 60)}:{(audio.duration % 60).toString().padStart(2, '0')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Play className="h-8 w-8 text-white" />
+                      </div>
+                      <p className="text-gray-600">Nenhum áudio foi adicionado ainda</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
