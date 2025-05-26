@@ -12,7 +12,6 @@ interface MemorialPageProps {
 }
 
 const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
-  const [selectedTab, setSelectedTab] = useState('historia');
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
@@ -23,20 +22,21 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
     });
   };
 
-  const calculateAge = (birthDate: string, deathDate: string) => {
-    const birth = new Date(birthDate);
-    const death = new Date(deathDate);
-    return death.getFullYear() - birth.getFullYear();
-  };
-
   const toggleAudio = (audioId: string) => {
     setPlayingAudio(playingAudio === audioId ? null : audioId);
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
@@ -117,8 +117,8 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mb-8">
+        {/* Navigation Menu */}
+        <div className="flex justify-center mb-8 sticky top-20 z-40">
           <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm">
             {[
               { id: 'historia', label: 'História' },
@@ -127,12 +127,8 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedTab(tab.id)}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-                  selectedTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                onClick={() => scrollToSection(tab.id)}
+                className="px-6 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               >
                 {tab.label}
               </button>
@@ -140,93 +136,91 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
           </div>
         </div>
 
-        {/* Content Based on Selected Tab */}
-        <div className="mb-8">
-          {selectedTab === 'historia' && (
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">História de Vida</h2>
-                <p className="text-gray-700 leading-relaxed">
-                  {memorial.biography || 'Uma pessoa especial que tocou muitas vidas com sua bondade, alegria e amor. Sua memória permanecerá sempre viva em nossos corações, inspirando todos que tiveram o privilégio de conhecê-la.'}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+        {/* História Section */}
+        <section id="historia" className="mb-16 scroll-mt-32">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">História de Vida</h2>
+              <p className="text-gray-700 leading-relaxed">
+                {memorial.biography || 'Uma pessoa especial que tocou muitas vidas com sua bondade, alegria e amor. Sua memória permanecerá sempre viva em nossos corações, inspirando todos que tiveram o privilégio de conhecê-la.'}
+              </p>
+            </CardContent>
+          </Card>
+        </section>
 
-          {selectedTab === 'memorias' && (
-            <div className="space-y-6">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-semibold mb-6">Galeria de Memórias</h2>
-                  {memorial.photos && memorial.photos.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {memorial.photos.map((photo, index) => (
-                        <div key={index} className="relative group cursor-pointer">
-                          <img
-                            src={photo}
-                            alt={`Memória ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg transition-transform group-hover:scale-105"
-                          />
-                        </div>
-                      ))}
+        {/* Memórias Section */}
+        <section id="memorias" className="mb-16 scroll-mt-32">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-semibold mb-6">Galeria de Memórias</h2>
+              {memorial.photos && memorial.photos.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {memorial.photos.map((photo, index) => (
+                    <div key={index} className="relative group cursor-pointer">
+                      <img
+                        src={photo}
+                        alt={`Memória ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg transition-transform group-hover:scale-105"
+                      />
                     </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">Nenhuma foto foi adicionada ainda.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Nenhuma foto foi adicionada ainda.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
 
-          {selectedTab === 'audio' && (
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Mensagens de Áudio</h2>
-                {memorial.audios && memorial.audios.length > 0 ? (
-                  <div className="space-y-4">
-                    {memorial.audios.map((audio, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => toggleAudio(audio.url)}
-                            className="w-12 h-12 rounded-full"
-                          >
-                            {playingAudio === audio.url ? (
-                              <Pause className="h-5 w-5" />
-                            ) : (
-                              <Play className="h-5 w-5" />
-                            )}
-                          </Button>
-                          <div>
-                            <p className="font-medium">{audio.title}</p>
-                            {audio.duration && (
-                              <p className="text-sm text-gray-500">
-                                Duração: {Math.floor(audio.duration / 60)}:{(audio.duration % 60).toString().padStart(2, '0')}
-                              </p>
-                            )}
-                          </div>
+        {/* Áudio Section */}
+        <section id="audio" className="mb-16 scroll-mt-32">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">Mensagens de Áudio</h2>
+              {memorial.audios && memorial.audios.length > 0 ? (
+                <div className="space-y-4">
+                  {memorial.audios.map((audio, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => toggleAudio(audio.url)}
+                          className="w-12 h-12 rounded-full"
+                        >
+                          {playingAudio === audio.url ? (
+                            <Pause className="h-5 w-5" />
+                          ) : (
+                            <Play className="h-5 w-5" />
+                          )}
+                        </Button>
+                        <div>
+                          <p className="font-medium">{audio.title}</p>
+                          {audio.duration && (
+                            <p className="text-sm text-gray-500">
+                              Duração: {Math.floor(audio.duration / 60)}:{(audio.duration % 60).toString().padStart(2, '0')}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Play className="h-8 w-8 text-white" />
-                      </div>
-                      <p className="text-gray-600">Nenhum áudio foi adicionado ainda</p>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Play className="h-8 w-8 text-white" />
+                    </div>
+                    <p className="text-gray-600">Nenhum áudio foi adicionado ainda</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
 
         {/* Share Button */}
         <div className="text-center pb-8">
