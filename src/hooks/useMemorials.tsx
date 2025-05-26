@@ -1,13 +1,67 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Memorial } from '@/types/memorial';
-import { useQRCode } from '@/hooks/useQRCode';
+import { toast } from '@/hooks/use-toast';
+import QRCode from 'qrcode';
 
 export const useMemorials = () => {
   const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { generateQRCode } = useQRCode();
+
+  const generateQRCode = async (memorialSlug: string, memorialId: string) => {
+    try {
+      // Generate QR code as data URL
+      const qrCodeUrl = `${window.location.origin}/memorial/${memorialSlug}`;
+      const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
+        width: 512,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+
+      // Convert data URL to blob
+      const response = await fetch(qrCodeDataURL);
+      const blob = await response.blob();
+      
+      // Upload to Supabase Storage
+      const fileName = `${memorialSlug}-qr.png`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('qr-codes')
+        .upload(fileName, blob, {
+          contentType: 'image/png',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('qr-codes')
+        .getPublicUrl(fileName);
+
+      // Update memorial with QR code URL
+      const { error: updateError } = await supabase
+        .from('memorials')
+        .update({ qr_code_url: publicUrl })
+        .eq('id', memorialId);
+
+      if (updateError) throw updateError;
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error generating QR code:', error);
+      toast({
+        title: "Erro ao gerar QR Code",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
 
   const fetchMemorials = async () => {
     try {
