@@ -40,6 +40,8 @@ const FileUpload = ({
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `${fileName}`;
 
+    console.log('Uploading file:', fileName, 'to bucket: memorial-files');
+
     const { error: uploadError } = await supabase.storage
       .from('memorial-files')
       .upload(filePath, file, {
@@ -48,13 +50,15 @@ const FileUpload = ({
       });
 
     if (uploadError) {
-      throw uploadError;
+      console.error('Upload error details:', uploadError);
+      throw new Error(`Erro no upload: ${uploadError.message}`);
     }
 
     const { data } = supabase.storage
       .from('memorial-files')
       .getPublicUrl(filePath);
 
+    console.log('File uploaded successfully, public URL:', data.publicUrl);
     return data.publicUrl;
   };
 
@@ -81,6 +85,7 @@ const FileUpload = ({
       if (multiple && files.length > 1) {
         const urls: string[] = [];
         for (let i = 0; i < files.length; i++) {
+          console.log(`Uploading file ${i + 1} of ${files.length}: ${files[i].name}`);
           const url = await uploadFile(files[i]);
           urls.push(url);
           setUploadProgress(((i + 1) / files.length) * 100);
@@ -91,6 +96,7 @@ const FileUpload = ({
           description: `${files.length} arquivos enviados com sucesso`,
         });
       } else {
+        console.log(`Uploading single file: ${files[0].name}`);
         const url = await uploadFile(files[0]);
         setUploadProgress(100);
         onUpload(url);
@@ -103,19 +109,21 @@ const FileUpload = ({
       console.error('Upload error:', error);
       toast({
         title: "Erro no upload",
-        description: error.message || "Erro ao enviar arquivo",
+        description: error.message || "Erro ao enviar arquivo. Verifique se o arquivo é válido e tente novamente.",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
       setUploadProgress(0);
+      // Reset input value so the same file can be uploaded again if needed
+      event.target.value = '';
     }
   };
 
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
         {currentFile && !multiple && (
           <div className="mb-2">
             <img
@@ -146,8 +154,9 @@ const FileUpload = ({
               {uploading ? `Enviando... ${uploadProgress.toFixed(0)}%` : 'Clique para selecionar arquivo'}
             </span>
             <span className="text-xs text-gray-400">
-              {accept.includes('image') && 'Imagens até 5MB'}
-              {accept.includes('audio') && 'Áudios até 5MB'}
+              {accept.includes('image') && `Imagens até ${Math.round(maxSize / (1024 * 1024))}MB`}
+              {accept.includes('audio') && `Áudios até ${Math.round(maxSize / (1024 * 1024))}MB`}
+              {accept.includes('video') && `Vídeos até ${Math.round(maxSize / (1024 * 1024))}MB`}
             </span>
           </div>
         </Label>
