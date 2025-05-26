@@ -70,7 +70,7 @@ const QRCodeModal = ({ memorial, isOpen, onClose }: QRCodeModalProps) => {
               <img src="${memorial.qr_code_url}" alt="QR Code" class="qr-image" />
               <div class="memorial-info">
                 <div class="memorial-name">${memorial.name}</div>
-                <div class="memorial-url">memorialize.com/${memorial.slug}</div>
+                <div class="memorial-url">rememberme.com.br/${memorial.slug}</div>
               </div>
             </div>
           </body>
@@ -104,7 +104,7 @@ const QRCodeModal = ({ memorial, isOpen, onClose }: QRCodeModalProps) => {
               
               <div className="text-center text-sm text-gray-600">
                 <p className="font-medium">{memorial.name}</p>
-                <p>memorialize.com/{memorial.slug}</p>
+                <p>rememberme.com.br/{memorial.slug}</p>
               </div>
               
               <div className="flex gap-2 w-full">

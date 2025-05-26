@@ -11,8 +11,8 @@ export const useQRCode = () => {
     try {
       setLoading(true);
       
-      // Generate QR code as data URL
-      const qrCodeUrl = `${window.location.origin}/memorial/${memorialSlug}`;
+      // Generate QR code as data URL using the correct domain
+      const qrCodeUrl = `https://rememberme.com.br/${memorialSlug}`;
       const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
         width: 512,
         margin: 2,
