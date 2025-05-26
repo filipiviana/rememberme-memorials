@@ -11,6 +11,12 @@ import { Memorial } from '@/types/memorial';
 import FileUpload from './FileUpload';
 import GalleryUpload from './GalleryUpload';
 import AudioUpload from './AudioUpload';
+import VideoUpload from './VideoUpload';
+
+interface VideoFile {
+  url: string;
+  title: string;
+}
 
 interface EditMemorialFormProps {
   memorial: Memorial;
@@ -22,6 +28,12 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
   const [profilePhoto, setProfilePhoto] = useState(memorial.profilePhoto);
   const [coverPhoto, setCoverPhoto] = useState(memorial.coverPhoto);
   const [photos, setPhotos] = useState<string[]>(memorial.photos);
+  const [videos, setVideos] = useState<VideoFile[]>(
+    memorial.videos.map((url, index) => ({
+      url,
+      title: `Vídeo ${index + 1}`
+    }))
+  );
   const [audios, setAudios] = useState(memorial.audios || []);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -45,6 +57,7 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
       profilePhoto,
       coverPhoto,
       photos,
+      videos: videos.map(v => v.url),
       audios,
     };
 
@@ -114,7 +127,6 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
                   </div>
                 </div>
 
-                {/* Fotos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FileUpload
                     label="Foto de Perfil"
@@ -131,7 +143,6 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
                   />
                 </div>
 
-                {/* Textos */}
                 <div>
                   <Label htmlFor="tribute">Tributo</Label>
                   <Textarea
@@ -156,6 +167,12 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
                 <GalleryUpload
                   photos={photos}
                   onPhotosChange={setPhotos}
+                />
+
+                {/* Upload de Vídeos */}
+                <VideoUpload
+                  videos={videos}
+                  onVideosChange={setVideos}
                 />
 
                 {/* Arquivos de Áudio */}

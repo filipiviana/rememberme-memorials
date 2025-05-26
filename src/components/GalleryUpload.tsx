@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X, Upload } from 'lucide-react';
+import { X, Upload, ZoomIn } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import FileUpload from './FileUpload';
 
 interface GalleryUploadProps {
@@ -11,6 +13,8 @@ interface GalleryUploadProps {
 }
 
 const GalleryUpload = ({ photos, onPhotosChange }: GalleryUploadProps) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const handleAddPhotos = (newUrls: string[]) => {
     onPhotosChange([...photos, ...newUrls]);
   };
@@ -33,21 +37,39 @@ const GalleryUpload = ({ photos, onPhotosChange }: GalleryUploadProps) => {
       />
 
       {photos.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {photos.map((photo, index) => (
             <div key={index} className="relative group">
-              <img
-                src={photo}
-                alt={`Foto ${index + 1}`}
-                className="w-full h-24 object-cover rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemovePhoto(index)}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <AspectRatio ratio={1}>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="relative w-full h-full cursor-pointer">
+                      <img
+                        src={photo}
+                        alt={`Foto ${index + 1}`}
+                        className="w-full h-full object-cover rounded-lg transition-transform group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
+                        <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl w-full">
+                    <img
+                      src={photo}
+                      alt={`Foto ${index + 1}`}
+                      className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                    />
+                  </DialogContent>
+                </Dialog>
+                <button
+                  type="button"
+                  onClick={() => handleRemovePhoto(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </AspectRatio>
             </div>
           ))}
         </div>

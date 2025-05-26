@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,8 +11,14 @@ import MemorialLogo from '@/components/MemorialLogo';
 import FileUpload from '@/components/FileUpload';
 import GalleryUpload from '@/components/GalleryUpload';
 import AudioUpload from '@/components/AudioUpload';
+import VideoUpload from '@/components/VideoUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
+
+interface VideoFile {
+  url: string;
+  title: string;
+}
 
 const CreateMemorialRequest = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +35,7 @@ const CreateMemorialRequest = () => {
   });
 
   const [photos, setPhotos] = useState<string[]>([]);
-  const [videos, setVideos] = useState<string[]>([]);
+  const [videos, setVideos] = useState<VideoFile[]>([]);
   const [audios, setAudios] = useState<AudioFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -62,7 +67,7 @@ const CreateMemorialRequest = () => {
           profile_photo_url: formData.profilePhoto,
           cover_photo_url: formData.coverPhoto,
           photos,
-          videos,
+          videos: videos.map(v => v.url),
           audios: audios as any, // Cast to 'any' to satisfy the Json type
           requester_name: formData.requesterName,
           requester_email: formData.requesterEmail,
@@ -227,6 +232,11 @@ const CreateMemorialRequest = () => {
                 <GalleryUpload
                   photos={photos}
                   onPhotosChange={setPhotos}
+                />
+
+                <VideoUpload
+                  videos={videos}
+                  onVideosChange={setVideos}
                 />
 
                 <AudioUpload

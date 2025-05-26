@@ -1,16 +1,18 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Share2, Calendar, Play, Pause, Heart } from 'lucide-react';
+import { Share2, Calendar, Play, Pause, Heart, Video } from 'lucide-react';
 import { usePublicMemorial } from '@/hooks/usePublicMemorial';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import MemorialLogo from '@/components/MemorialLogo';
 
 const PublicMemorial = () => {
   const { slug } = useParams<{ slug: string }>();
   const { memorial, loading, error } = usePublicMemorial(slug || '');
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -22,6 +24,10 @@ const PublicMemorial = () => {
 
   const toggleAudio = (audioId: string) => {
     setPlayingAudio(playingAudio === audioId ? null : audioId);
+  };
+
+  const toggleVideo = (videoId: string) => {
+    setPlayingVideo(playingVideo === videoId ? null : videoId);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -157,16 +163,17 @@ const PublicMemorial = () => {
 
         {/* Navigation Menu */}
         <div className="flex justify-center mb-8 sticky top-20 z-40">
-          <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm">
+          <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-sm overflow-x-auto">
             {[
               { id: 'historia', label: 'História' },
-              { id: 'memorias', label: 'Memórias' },
+              { id: 'memorias', label: 'Fotos' },
+              { id: 'videos', label: 'Vídeos' },
               { id: 'audio', label: 'Áudio' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => scrollToSection(tab.id)}
-                className="px-6 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-nowrap"
               >
                 {tab.label}
               </button>
@@ -186,26 +193,88 @@ const PublicMemorial = () => {
           </Card>
         </section>
 
-        {/* Memórias Section */}
+        {/* Fotos Section - Updated with better mobile layout */}
         <section id="memorias" className="mb-16 scroll-mt-32">
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-6">Galeria de Memórias</h2>
+              <h2 className="text-2xl font-semibold mb-6">Galeria de Fotos</h2>
               {memorial.photos && memorial.photos.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {memorial.photos.map((photo, index) => (
-                    <div key={index} className="relative group cursor-pointer">
-                      <img
-                        src={photo}
-                        alt={`Memória ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg transition-transform group-hover:scale-105"
-                      />
-                    </div>
+                    <AspectRatio key={index} ratio={1}>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div className="relative group cursor-pointer w-full h-full">
+                            <img
+                              src={photo}
+                              alt={`Memória ${index + 1}`}
+                              className="w-full h-full object-cover rounded-lg transition-transform group-hover:scale-105"
+                            />
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl w-full">
+                          <img
+                            src={photo}
+                            alt={`Memória ${index + 1}`}
+                            className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </AspectRatio>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">Nenhuma foto foi adicionada ainda.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Vídeos Section - New */}
+        <section id="videos" className="mb-16 scroll-mt-32">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">Vídeos</h2>
+              {memorial.videos && memorial.videos.length > 0 ? (
+                <div className="space-y-4">
+                  {memorial.videos.map((video, index) => (
+                    <div key={index} className="bg-gray-100 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Video className="h-5 w-5 text-blue-500" />
+                          <p className="font-medium">Vídeo {index + 1}</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleVideo(video)}
+                        >
+                          {playingVideo === video ? (
+                            <Pause className="h-4 w-4" />
+                          ) : (
+                            <Play className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {playingVideo === video && (
+                        <video
+                          src={video}
+                          controls
+                          className="w-full max-h-64 rounded"
+                          onEnded={() => setPlayingVideo(null)}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
+                  <div className="text-center">
+                    <Video className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Nenhum vídeo foi adicionado ainda</p>
+                  </div>
                 </div>
               )}
             </CardContent>
