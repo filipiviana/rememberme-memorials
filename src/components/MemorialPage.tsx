@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Share2, Calendar, Play, Pause } from 'lucide-react';
@@ -19,6 +19,7 @@ interface MemorialPageProps {
 const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
   const { settings } = useAppSettings();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [audioElements, setAudioElements] = useState<Map<string, HTMLAudioElement>>(new Map());
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -28,9 +29,85 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
     });
   };
 
-  const toggleAudio = (audioId: string) => {
-    setPlayingAudio(playingAudio === audioId ? null : audioId);
-  };
+  const stopAllManualAudio = useCallback(() => {
+    console.log('MemorialPage: stopping all manual audio');
+    audioElements.forEach((audio) => {
+      if (!audio.paused) {
+        audio.pause();
+      }
+    });
+    setPlayingAudio(null);
+  }, [audioElements]);
+
+  const toggleAudio = useCallback((audioId: string) => {
+    console.log('MemorialPage: toggling audio:', audioId);
+    
+    // Stop autoplay audio when manual audio is played
+    window.dispatchEvent(new CustomEvent('stopAllAudio', { detail: { source: 'manual' } }));
+    
+    if (playingAudio === audioId) {
+      // Stop current audio
+      const audio = audioElements.get(audioId);
+      if (audio) {
+        audio.pause();
+      }
+      setPlayingAudio(null);
+    } else {
+      // Stop all other audio first
+      stopAllManualAudio();
+      
+      // Play new audio
+      const audio = audioElements.get(audioId);
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(error => {
+          console.error('Error playing audio:', error);
+        });
+        setPlayingAudio(audioId);
+      } else {
+        // Create new audio element
+        const newAudio = new Audio(audioId);
+        newAudio.addEventListener('ended', () => {
+          setPlayingAudio(null);
+        });
+        newAudio.addEventListener('pause', () => {
+          setPlayingAudio(null);
+        });
+        
+        setAudioElements(prev => new Map(prev.set(audioId, newAudio)));
+        newAudio.play().catch(error => {
+          console.error('Error playing audio:', error);
+        });
+        setPlayingAudio(audioId);
+      }
+    }
+  }, [playingAudio, audioElements, stopAllManualAudio]);
+
+  // Listen for external audio stop events
+  useEffect(() => {
+    const handleStopAllAudio = (event: CustomEvent) => {
+      if (event.detail.source !== 'manual') {
+        console.log('MemorialPage: stopping manual audio due to external request');
+        stopAllManualAudio();
+      }
+    };
+    
+    window.addEventListener('stopAllAudio', handleStopAllAudio as EventListener);
+    
+    return () => {
+      window.removeEventListener('stopAllAudio', handleStopAllAudio as EventListener);
+    };
+  }, [stopAllManualAudio]);
+
+  // Cleanup audio elements on unmount
+  useEffect(() => {
+    return () => {
+      audioElements.forEach((audio) => {
+        audio.pause();
+        audio.src = '';
+      });
+    };
+  }, [audioElements]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
