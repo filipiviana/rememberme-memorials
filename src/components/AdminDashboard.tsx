@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,12 +10,14 @@ import CreateMemorialForm from './CreateMemorialForm';
 import EditMemorialForm from './EditMemorialForm';
 import QRCodeModal from './QRCodeModal';
 import MemorialRequestsManager from './MemorialRequestsManager';
+import AdminTributesManager from './AdminTributesManager';
 import { Memorial } from '../types/memorial';
 import { useAuth } from '@/hooks/useAuth';
 import { useMemorials } from '@/hooks/useMemorials';
 import { useStats } from '@/hooks/useStats';
 import { useQRCode } from '@/hooks/useQRCode';
 import { useMemorialRequests } from '@/hooks/useMemorialRequests';
+import { useAdminTributes } from '@/hooks/useAdminTributes';
 import { toast } from '@/hooks/use-toast';
 
 interface AdminDashboardProps {
@@ -33,6 +34,7 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
   const { stats, loading: statsLoading } = useStats();
   const { generateQRCode, loading: qrLoading } = useQRCode();
   const { requests } = useMemorialRequests();
+  const { pendingCount } = useAdminTributes();
 
   const handleLogout = async () => {
     await signOut();
@@ -164,13 +166,21 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="requests" className="relative">
               Solicitações
               {pendingRequests.length > 0 && (
                 <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-red-500">
                   {pendingRequests.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="tributes" className="relative">
+              Homenagens
+              {pendingCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-red-500">
+                  {pendingCount}
                 </Badge>
               )}
             </TabsTrigger>
@@ -222,9 +232,9 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Solicitações Pendentes</p>
+                      <p className="text-sm font-medium text-gray-600">Homenagens Pendentes</p>
                       <p className="text-3xl font-bold text-gray-900">
-                        {pendingRequests.length}
+                        {pendingCount}
                       </p>
                     </div>
                     <ClipboardList className="h-8 w-8 text-orange-500" />
@@ -360,6 +370,10 @@ const AdminDashboard = ({ onViewMemorial }: AdminDashboardProps) => {
 
           <TabsContent value="requests">
             <MemorialRequestsManager />
+          </TabsContent>
+
+          <TabsContent value="tributes">
+            <AdminTributesManager />
           </TabsContent>
         </Tabs>
       </main>

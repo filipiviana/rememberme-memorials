@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 import AdminLogin from '../components/AdminLogin';
 import AdminDashboard from '../components/AdminDashboard';
@@ -75,7 +77,6 @@ const AppContent = () => {
   return (
     <AdminDashboard
       onViewMemorial={handleViewMemorial}
-      onViewTributes={handleViewTributes}
     />
   );
 };
