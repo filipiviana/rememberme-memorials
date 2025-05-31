@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memorial_audios: {
         Row: {
           audio_title: string | null
@@ -135,6 +156,79 @@ export type Database = {
           videos?: string[] | null
         }
         Relationships: []
+      }
+      memorial_tribute_likes: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          tribute_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          tribute_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          tribute_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_tribute_likes_tribute_id_fkey"
+            columns: ["tribute_id"]
+            isOneToOne: false
+            referencedRelation: "memorial_tributes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorial_tributes: {
+        Row: {
+          author_name: string
+          created_at: string
+          id: string
+          image_url: string | null
+          likes_count: number
+          memorial_id: string
+          message: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          author_name: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          memorial_id: string
+          message: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          memorial_id?: string
+          message?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_tributes_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       memorial_videos: {
         Row: {

@@ -1,18 +1,20 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Share2, Calendar, Play, Pause, Heart, Video } from 'lucide-react';
+import { Share2, Calendar, Play, Pause, Heart } from 'lucide-react';
 import { usePublicMemorial } from '@/hooks/usePublicMemorial';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import MemorialLogo from '@/components/MemorialLogo';
+import VideoThumbnail from '@/components/VideoThumbnail';
+import TributeWall from '@/components/TributeWall';
 
 const PublicMemorial = () => {
   const { slug } = useParams<{ slug: string }>();
   const { memorial, loading, error } = usePublicMemorial(slug || '');
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -24,10 +26,6 @@ const PublicMemorial = () => {
 
   const toggleAudio = (audioId: string) => {
     setPlayingAudio(playingAudio === audioId ? null : audioId);
-  };
-
-  const toggleVideo = (videoId: string) => {
-    setPlayingVideo(playingVideo === videoId ? null : videoId);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -51,7 +49,6 @@ const PublicMemorial = () => {
       }
     } else {
       navigator.clipboard.writeText(url);
-      // Could add a toast notification here
     }
   };
 
@@ -168,7 +165,8 @@ const PublicMemorial = () => {
               { id: 'historia', label: 'História' },
               { id: 'memorias', label: 'Fotos' },
               { id: 'videos', label: 'Vídeos' },
-              { id: 'audio', label: 'Áudio' }
+              { id: 'audio', label: 'Áudio' },
+              { id: 'homenagens', label: 'Homenagens' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -193,7 +191,7 @@ const PublicMemorial = () => {
           </Card>
         </section>
 
-        {/* Fotos Section - Updated with better mobile layout */}
+        {/* Fotos Section */}
         <section id="memorias" className="mb-16 scroll-mt-32">
           <Card>
             <CardContent className="p-6">
@@ -232,49 +230,26 @@ const PublicMemorial = () => {
           </Card>
         </section>
 
-        {/* Vídeos Section - New */}
+        {/* Vídeos Section - Updated with thumbnails */}
         <section id="videos" className="mb-16 scroll-mt-32">
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Vídeos</h2>
+              <h2 className="text-2xl font-semibold mb-6">Vídeos</h2>
               {memorial.videos && memorial.videos.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {memorial.videos.map((video, index) => (
-                    <div key={index} className="bg-gray-100 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <Video className="h-5 w-5 text-blue-500" />
-                          <p className="font-medium">Vídeo {index + 1}</p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleVideo(video)}
-                        >
-                          {playingVideo === video ? (
-                            <Pause className="h-4 w-4" />
-                          ) : (
-                            <Play className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      {playingVideo === video && (
-                        <video
-                          src={video}
-                          controls
-                          className="w-full max-h-64 rounded"
-                          onEnded={() => setPlayingVideo(null)}
-                        />
-                      )}
-                    </div>
+                    <AspectRatio key={index} ratio={16/9}>
+                      <VideoThumbnail
+                        videoUrl={video}
+                        title={`Vídeo ${index + 1}`}
+                        className="w-full h-full"
+                      />
+                    </AspectRatio>
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg">
-                  <div className="text-center">
-                    <Video className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">Nenhum vídeo foi adicionado ainda</p>
-                  </div>
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Nenhum vídeo foi adicionado ainda.</p>
                 </div>
               )}
             </CardContent>
@@ -328,6 +303,12 @@ const PublicMemorial = () => {
             </CardContent>
           </Card>
         </section>
+
+        {/* Tribute Wall Section */}
+        <TributeWall 
+          memorialId={memorial.id} 
+          memorialName={memorial.name}
+        />
 
         {/* Footer */}
         <div className="text-center pb-8">
