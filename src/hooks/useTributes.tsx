@@ -31,7 +31,14 @@ export const useTributes = (memorialId?: string) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTributes(data || []);
+      
+      // Type assertion para garantir que o status está correto
+      const typedData = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'approved' | 'rejected'
+      }));
+      
+      setTributes(typedData);
     } catch (error) {
       console.error('Error fetching tributes:', error);
     } finally {
@@ -61,7 +68,13 @@ export const useTributes = (memorialId?: string) => {
 
       if (error) throw error;
 
-      setTributes(prev => [data, ...prev]);
+      // Type assertion para garantir que o status está correto
+      const typedData = {
+        ...data,
+        status: data.status as 'pending' | 'approved' | 'rejected'
+      };
+
+      setTributes(prev => [typedData, ...prev]);
       
       toast({
         title: "Homenagem enviada!",
@@ -87,11 +100,20 @@ export const useTributes = (memorialId?: string) => {
         .from('memorial_tribute_likes')
         .insert({ tribute_id: tributeId });
 
+      // Get current tribute to increment likes_count
+      const { data: currentTribute, error: fetchError } = await supabase
+        .from('memorial_tributes')
+        .select('likes_count')
+        .eq('id', tributeId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
       // Update tribute likes count
       const { error } = await supabase
         .from('memorial_tributes')
         .update({ 
-          likes_count: supabase.raw('likes_count + 1')
+          likes_count: currentTribute.likes_count + 1
         })
         .eq('id', tributeId);
 
