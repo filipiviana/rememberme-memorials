@@ -1,14 +1,15 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Share2, Calendar, Play, Pause } from 'lucide-react';
 import { Memorial } from '../types/memorial';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import MemorialLogo from './MemorialLogo';
 import VideoThumbnail from './VideoThumbnail';
 import TributeWall from './TributeWall';
+import AutoplayAudioControls from './AutoplayAudioControls';
 
 interface MemorialPageProps {
   memorial: Memorial;
@@ -16,6 +17,7 @@ interface MemorialPageProps {
 }
 
 const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
+  const { settings } = useAppSettings();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
@@ -39,6 +41,12 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Autoplay Audio Controls */}
+      <AutoplayAudioControls 
+        audios={memorial.audios || []} 
+        autoplayEnabled={settings.autoplay_enabled} 
+      />
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

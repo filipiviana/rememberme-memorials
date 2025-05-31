@@ -1,19 +1,21 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Share2, Calendar, Play, Pause, Heart } from 'lucide-react';
 import { usePublicMemorial } from '@/hooks/usePublicMemorial';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import MemorialLogo from '@/components/MemorialLogo';
 import VideoThumbnail from '@/components/VideoThumbnail';
 import TributeWall from '@/components/TributeWall';
+import AutoplayAudioControls from '@/components/AutoplayAudioControls';
 
 const PublicMemorial = () => {
   const { slug } = useParams<{ slug: string }>();
   const { memorial, loading, error } = usePublicMemorial(slug || '');
+  const { settings } = useAppSettings();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
@@ -82,6 +84,12 @@ const PublicMemorial = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Autoplay Audio Controls */}
+      <AutoplayAudioControls 
+        audios={memorial.audios || []} 
+        autoplayEnabled={settings.autoplay_enabled} 
+      />
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

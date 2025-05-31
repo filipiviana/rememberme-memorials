@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAppSettings } from './useAppSettings';
 
 export interface Tribute {
   id: string;
@@ -17,6 +18,7 @@ export interface Tribute {
 export const useTributes = (memorialId?: string) => {
   const [tributes, setTributes] = useState<Tribute[]>([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useAppSettings();
 
   const fetchTributes = async () => {
     if (!memorialId) return;
@@ -54,6 +56,9 @@ export const useTributes = (memorialId?: string) => {
     if (!memorialId) return { error: 'Memorial ID not provided' };
 
     try {
+      // Determinar status baseado na configuração de moderação
+      const status = settings.moderation_enabled ? 'pending' : 'approved';
+      
       const { data, error } = await supabase
         .from('memorial_tributes')
         .insert({
@@ -61,7 +66,7 @@ export const useTributes = (memorialId?: string) => {
           author_name: tribute.author_name,
           message: tribute.message,
           image_url: tribute.image_url || null,
-          status: 'approved' // Auto-approve for now
+          status: status
         })
         .select()
         .single();
@@ -74,11 +79,16 @@ export const useTributes = (memorialId?: string) => {
         status: data.status as 'pending' | 'approved' | 'rejected'
       };
 
-      setTributes(prev => [typedData, ...prev]);
+      // Só adicionar à lista se foi aprovado automaticamente
+      if (status === 'approved') {
+        setTributes(prev => [typedData, ...prev]);
+      }
       
       toast({
-        title: "Homenagem enviada!",
-        description: "Sua mensagem foi publicada com sucesso.",
+        title: settings.moderation_enabled ? "Homenagem enviada para moderação!" : "Homenagem enviada!",
+        description: settings.moderation_enabled 
+          ? "Sua mensagem será analisada antes de ser publicada."
+          : "Sua mensagem foi publicada com sucesso.",
       });
 
       return { error: null };
