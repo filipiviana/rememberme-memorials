@@ -94,6 +94,7 @@ export const useMemorials = () => {
           title: a.audio_title || 'Sem título',
           duration: a.duration
         })) || [],
+        featuredVideo: memorial.featured_video_url || undefined,
         slug: memorial.slug,
         qr_code_url: memorial.qr_code_url,
         isPublished: memorial.is_published,
@@ -157,6 +158,7 @@ export const useMemorials = () => {
           biography: memorial.biography,
           profile_photo_url: memorial.profilePhoto,
           cover_photo_url: memorial.coverPhoto,
+          featured_video_url: memorial.featuredVideo,
           slug: slugData,
           is_published: memorial.isPublished || false
         })
@@ -221,6 +223,7 @@ export const useMemorials = () => {
           biography: memorial.biography,
           profile_photo_url: memorial.profilePhoto,
           cover_photo_url: memorial.coverPhoto,
+          featured_video_url: memorial.featuredVideo,
           is_published: memorial.isPublished,
         })
         .eq('id', memorial.id);

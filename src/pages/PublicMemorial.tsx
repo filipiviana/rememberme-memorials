@@ -11,6 +11,9 @@ import MemorialLogo from '@/components/MemorialLogo';
 import VideoThumbnail from '@/components/VideoThumbnail';
 import TributeWall from '@/components/TributeWall';
 import AutoplayAudioControls from '@/components/AutoplayAudioControls';
+import FeaturedVideo from '@/components/FeaturedVideo';
+import StarIcon from '@/components/icons/StarIcon';
+import CrossIcon from '@/components/icons/CrossIcon';
 
 const PublicMemorial = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -164,7 +167,7 @@ const PublicMemorial = () => {
       {/* Autoplay Audio Controls */}
       <AutoplayAudioControls 
         audios={memorial.audios || []} 
-        autoplayEnabled={settings.autoplay_enabled} 
+        autoplayEnabled={false}
       />
 
       {/* Header */}
@@ -222,12 +225,12 @@ const PublicMemorial = () => {
                 {/* Birth and Death Dates */}
                 <div className="flex flex-col md:flex-row items-center justify-center md:justify-start space-y-2 md:space-y-0 md:space-x-8 mb-4">
                   <div className="flex items-center text-gray-600">
-                    <div className="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                    <StarIcon className="w-3 h-3 text-blue-400 mr-2" />
                     <span className="text-sm">{formatDate(memorial.birthDate)}</span>
                   </div>
                   
                   <div className="flex items-center text-gray-600">
-                    <div className="w-3 h-3 bg-gray-400 mr-2" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                    <CrossIcon className="w-3 h-3 text-gray-400 mr-2" />
                     <span className="text-sm">{formatDate(memorial.deathDate)}</span>
                   </div>
                 </div>
@@ -242,6 +245,16 @@ const PublicMemorial = () => {
             </div>
           </div>
         </div>
+
+        {/* Featured Video Section */}
+        {memorial.featuredVideo && (
+          <section className="mb-16">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-semibold mb-6">Vídeo em Destaque</h2>
+              <FeaturedVideo videoUrl={memorial.featuredVideo} />
+            </div>
+          </section>
+        )}
 
         {/* Navigation Menu */}
         <div className="flex justify-center mb-8 sticky top-20 z-40">

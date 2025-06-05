@@ -17,6 +17,7 @@ export interface Memorial {
   photos: string[];
   videos: string[];
   audios?: AudioFile[];
+  featuredVideo?: string;
   slug: string;
   qr_code_url?: string;
   isPublished: boolean;

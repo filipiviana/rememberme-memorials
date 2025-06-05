@@ -10,6 +10,9 @@ import MemorialLogo from './MemorialLogo';
 import VideoThumbnail from './VideoThumbnail';
 import TributeWall from './TributeWall';
 import AutoplayAudioControls from './AutoplayAudioControls';
+import FeaturedVideo from './FeaturedVideo';
+import StarIcon from './icons/StarIcon';
+import CrossIcon from './icons/CrossIcon';
 
 interface MemorialPageProps {
   memorial: Memorial;
@@ -121,7 +124,7 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
       {/* Autoplay Audio Controls */}
       <AutoplayAudioControls 
         audios={memorial.audios || []} 
-        autoplayEnabled={settings.autoplay_enabled} 
+        autoplayEnabled={false}
       />
 
       {/* Header */}
@@ -185,12 +188,12 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
                 {/* Birth and Death Dates */}
                 <div className="flex flex-col md:flex-row items-center justify-center md:justify-start space-y-2 md:space-y-0 md:space-x-8 mb-4">
                   <div className="flex items-center text-gray-600">
-                    <div className="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                    <StarIcon className="w-3 h-3 text-blue-400 mr-2" />
                     <span className="text-sm">{formatDate(memorial.birthDate)}</span>
                   </div>
                   
                   <div className="flex items-center text-gray-600">
-                    <div className="w-3 h-3 bg-gray-400 mr-2" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                    <CrossIcon className="w-3 h-3 text-gray-400 mr-2" />
                     <span className="text-sm">{formatDate(memorial.deathDate)}</span>
                   </div>
                 </div>
@@ -205,6 +208,16 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
             </div>
           </div>
         </div>
+
+        {/* Featured Video Section */}
+        {memorial.featuredVideo && (
+          <section className="mb-16">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-semibold mb-6">Vídeo em Destaque</h2>
+              <FeaturedVideo videoUrl={memorial.featuredVideo} />
+            </div>
+          </section>
+        )}
 
         {/* Navigation Menu */}
         <div className="flex justify-center mb-8 sticky top-20 z-40">
@@ -360,7 +373,7 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
 
         {/* Share Button */}
         <div className="text-center pb-8">
-          <Button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-lg">
+          <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg">
             Compartilhar
           </Button>
         </div>

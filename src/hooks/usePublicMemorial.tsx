@@ -52,6 +52,7 @@ export const usePublicMemorial = (slug: string) => {
           title: a.audio_title || 'Sem título',
           duration: a.duration
         })) || [],
+        featuredVideo: data.featured_video_url || undefined,
         slug: data.slug,
         qr_code_url: data.qr_code_url,
         isPublished: data.is_published,

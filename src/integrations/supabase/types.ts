@@ -102,6 +102,7 @@ export type Database = {
           cover_photo_url: string | null
           created_at: string
           death_date: string
+          featured_video_url: string | null
           id: string
           name: string
           notes: string | null
@@ -122,6 +123,7 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           death_date: string
+          featured_video_url?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -142,6 +144,7 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           death_date?: string
+          featured_video_url?: string | null
           id?: string
           name?: string
           notes?: string | null
@@ -295,6 +298,7 @@ export type Database = {
           cover_photo_url: string | null
           created_at: string
           death_date: string
+          featured_video_url: string | null
           id: string
           is_published: boolean
           name: string
@@ -310,6 +314,7 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           death_date: string
+          featured_video_url?: string | null
           id?: string
           is_published?: boolean
           name: string
@@ -325,6 +330,7 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           death_date?: string
+          featured_video_url?: string | null
           id?: string
           is_published?: boolean
           name?: string
