@@ -1,9 +1,13 @@
 
 import React from 'react';
 
-const MemorialLogo = () => {
+interface MemorialLogoProps {
+  className?: string;
+}
+
+const MemorialLogo = ({ className = "" }: MemorialLogoProps) => {
   return (
-    <div className="flex items-center space-x-2">
+    <div className={`flex items-center space-x-2 ${className}`}>
       <div className="w-8 h-8 flex items-center justify-center">
         <svg 
           viewBox="0 0 24 24" 
@@ -11,7 +15,7 @@ const MemorialLogo = () => {
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path d="M12 2C8.686 2 6 4.686 6 8c0 1.084.289 2.101.8 2.99L12 22l5.2-11.01c.511-.889.8-1.906.8-2.99 0-3.314-2.686-6-6-6zm0 8c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2z"/>
+          <path d="M12 2L9 9l-7 0 5.5 4.5L5 22l7-5 7 5-2.5-8.5L22 9l-7 0-3-7z"/>
         </svg>
       </div>
       <span className="text-xl font-bold text-gray-800">Remember me</span>
