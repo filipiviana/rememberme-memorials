@@ -27,6 +27,7 @@ interface EditMemorialFormProps {
 const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProps) => {
   const [profilePhoto, setProfilePhoto] = useState(memorial.profilePhoto);
   const [coverPhoto, setCoverPhoto] = useState(memorial.coverPhoto);
+  const [featuredVideo, setFeaturedVideo] = useState(memorial.featuredVideo || '');
   const [photos, setPhotos] = useState<string[]>(memorial.photos);
   const [videos, setVideos] = useState<VideoFile[]>(
     memorial.videos.map((url, index) => ({
@@ -56,6 +57,7 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
       biography: data.biography,
       profilePhoto,
       coverPhoto,
+      featuredVideo: featuredVideo || undefined,
       photos,
       videos: videos.map(v => v.url),
       audios,
@@ -141,6 +143,25 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
                     currentFile={coverPhoto}
                     onUpload={setCoverPhoto}
                   />
+                </div>
+
+                {/* Vídeo em Destaque */}
+                <div>
+                  <Label htmlFor="featuredVideo">Vídeo em Destaque</Label>
+                  <p className="text-sm text-gray-500 mb-2">
+                    Este vídeo aparecerá em destaque na página do memorial, logo após as informações principais.
+                  </p>
+                  <FileUpload
+                    label="Selecionar Vídeo em Destaque"
+                    accept="video/*"
+                    currentFile={featuredVideo}
+                    onUpload={setFeaturedVideo}
+                  />
+                  {featuredVideo && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                      <p className="text-sm text-green-700">✓ Vídeo em destaque configurado</p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
