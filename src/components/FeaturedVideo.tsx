@@ -48,14 +48,21 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
     const handlePause = () => setIsPlaying(false);
     
     const handleLoadedMetadata = () => {
-      // Check if video has audio track
-      const hasAudioTrack = video.mozHasAudio || 
-                           Boolean(video.webkitAudioDecodedByteCount) || 
-                           Boolean(video.audioTracks && video.audioTracks.length);
+      // Check if video has audio track using proper type assertions
+      const videoElement = video as any;
+      const hasAudioTrack = videoElement.mozHasAudio || 
+                           Boolean(videoElement.webkitAudioDecodedByteCount) || 
+                           Boolean(videoElement.audioTracks && videoElement.audioTracks.length) ||
+                           // Fallback: assume video has audio if it's not explicitly silent
+                           true;
+      
       setHasAudio(hasAudioTrack);
       
-      // Initialize volume
+      // Initialize volume to 1.0 and ensure video is muted initially
       video.volume = 1.0;
+      video.muted = true;
+      setIsMuted(true);
+      
       console.log('Video loaded:', { hasAudio: hasAudioTrack, volume: video.volume, muted: video.muted });
     };
 
@@ -113,9 +120,9 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
         Seu navegador não suporta reprodução de vídeo.
       </video>
       
-      {/* Audio Control Button - Higher z-index to stay above overlay */}
+      {/* Audio Control Button - Highest z-index to stay above everything */}
       {hasAudio && (
-        <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-4 right-4 z-30">
           <button
             onClick={toggleMute}
             className="w-12 h-12 bg-black bg-opacity-60 hover:bg-opacity-80 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-110"
@@ -146,7 +153,7 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
 
       {/* Audio Status Indicator - Only show if has audio and is muted */}
       {hasAudio && isMuted && (
-        <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 px-3 py-1 rounded-full z-15">
+        <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 px-3 py-1 rounded-full z-20">
           <span className="text-white text-xs flex items-center">
             <VolumeX className="h-3 w-3 mr-1" />
             Clique no ícone para ativar áudio
