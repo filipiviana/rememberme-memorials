@@ -31,7 +31,8 @@ const CreateMemorialForm = ({ onSubmit, onCancel }: CreateMemorialFormProps) => 
     tribute: '',
     biography: '',
     profilePhoto: '',
-    coverPhoto: ''
+    coverPhoto: '',
+    featuredVideo: '' // Add featured video to form data
   });
 
   const [photos, setPhotos] = useState<string[]>([]);
@@ -62,6 +63,7 @@ const CreateMemorialForm = ({ onSubmit, onCancel }: CreateMemorialFormProps) => 
       biography: formData.biography,
       profilePhoto: formData.profilePhoto || 'https://images.unsplash.com/photo-1494790108755-2616b612b788?w=400',
       coverPhoto: formData.coverPhoto || 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800',
+      featuredVideo: formData.featuredVideo || undefined, // Include featured video
       photos,
       videos: videos.map(v => v.url),
       audios,
@@ -167,6 +169,26 @@ const CreateMemorialForm = ({ onSubmit, onCancel }: CreateMemorialFormProps) => 
                   onUpload={(url) => setFormData(prev => ({ ...prev, coverPhoto: url }))}
                   currentFile={formData.coverPhoto}
                 />
+              </div>
+
+              {/* Vídeo em Destaque */}
+              <div className="space-y-2">
+                <Label htmlFor="featuredVideo">Vídeo em Destaque</Label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Este vídeo aparecerá em destaque na página do memorial, logo após as informações principais.
+                </p>
+                <FileUpload
+                  label="Selecionar Vídeo em Destaque"
+                  accept="video/*"
+                  onUpload={(url) => setFormData(prev => ({ ...prev, featuredVideo: url }))}
+                  currentFile={formData.featuredVideo}
+                  maxSize={512 * 1024 * 1024} // 512MB for featured video
+                />
+                {formData.featuredVideo && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                    <p className="text-sm text-green-700">✓ Vídeo em destaque configurado</p>
+                  </div>
+                )}
               </div>
 
               {/* Biografia */}

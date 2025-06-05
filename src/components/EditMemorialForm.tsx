@@ -156,6 +156,7 @@ const EditMemorialForm = ({ memorial, onSubmit, onCancel }: EditMemorialFormProp
                     accept="video/*"
                     currentFile={featuredVideo}
                     onUpload={setFeaturedVideo}
+                    maxSize={512 * 1024 * 1024} // 512MB for featured video
                   />
                   {featuredVideo && (
                     <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">

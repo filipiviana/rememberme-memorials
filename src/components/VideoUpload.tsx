@@ -55,7 +55,7 @@ const VideoUpload = ({ videos, onVideosChange }: VideoUploadProps) => {
         label="Adicionar Vídeo"
         accept="video/*"
         onUpload={handleAddVideo}
-        maxSize={50 * 1024 * 1024} // 50MB for video
+        maxSize={512 * 1024 * 1024} // 512MB for video
       />
 
       {videos.length > 0 && (
