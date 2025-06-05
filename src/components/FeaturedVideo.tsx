@@ -12,6 +12,7 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isIntersecting, setIsIntersecting] = useState(false);
+  const [hasAudio, setHasAudio] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -24,6 +25,7 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
           // Autoplay when video comes into view
           video.play().catch(() => {
             // Autoplay blocked by browser, just continue
+            console.log('Autoplay blocked by browser');
           });
         } else {
           // Pause when video goes out of view
@@ -44,13 +46,27 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
+    
+    const handleLoadedMetadata = () => {
+      // Check if video has audio track
+      const hasAudioTrack = video.mozHasAudio || 
+                           Boolean(video.webkitAudioDecodedByteCount) || 
+                           Boolean(video.audioTracks && video.audioTracks.length);
+      setHasAudio(hasAudioTrack);
+      
+      // Initialize volume
+      video.volume = 1.0;
+      console.log('Video loaded:', { hasAudio: hasAudioTrack, volume: video.volume, muted: video.muted });
+    };
 
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
 
     return () => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
   }, []);
 
@@ -61,7 +77,9 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
     if (isPlaying) {
       video.pause();
     } else {
-      video.play();
+      video.play().catch((error) => {
+        console.log('Play failed:', error);
+      });
     }
   };
 
@@ -71,7 +89,14 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
 
     const newMutedState = !isMuted;
     video.muted = newMutedState;
+    
+    // Ensure volume is set when unmuting
+    if (!newMutedState) {
+      video.volume = 1.0;
+    }
+    
     setIsMuted(newMutedState);
+    console.log('Audio toggled:', { muted: newMutedState, volume: video.volume, hasAudio });
   };
 
   return (
@@ -88,26 +113,28 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
         Seu navegador não suporta reprodução de vídeo.
       </video>
       
-      {/* Audio Control Button */}
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={toggleMute}
-          className="w-12 h-12 bg-black bg-opacity-60 hover:bg-opacity-80 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-110"
-          title={isMuted ? "Clique para ativar áudio" : "Clique para desativar áudio"}
-        >
-          {isMuted ? (
-            <VolumeX className="h-5 w-5 text-white" />
-          ) : (
-            <Volume2 className="h-5 w-5 text-white" />
-          )}
-        </button>
-      </div>
+      {/* Audio Control Button - Higher z-index to stay above overlay */}
+      {hasAudio && (
+        <div className="absolute top-4 right-4 z-20">
+          <button
+            onClick={toggleMute}
+            className="w-12 h-12 bg-black bg-opacity-60 hover:bg-opacity-80 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+            title={isMuted ? "Clique para ativar áudio" : "Clique para desativar áudio"}
+          >
+            {isMuted ? (
+              <VolumeX className="h-5 w-5 text-white" />
+            ) : (
+              <Volume2 className="h-5 w-5 text-white" />
+            )}
+          </button>
+        </div>
+      )}
 
-      {/* Custom Play/Pause Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200">
+      {/* Custom Play/Pause Overlay - Lower z-index and pointer-events to avoid blocking audio button */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 z-10 pointer-events-none">
         <button
           onClick={togglePlay}
-          className="w-16 h-16 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          className="w-16 h-16 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-110 pointer-events-auto"
         >
           {isPlaying ? (
             <Pause className="h-6 w-6 text-gray-800" />
@@ -117,9 +144,9 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
         </button>
       </div>
 
-      {/* Audio Status Indicator */}
-      {isMuted && (
-        <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 px-3 py-1 rounded-full">
+      {/* Audio Status Indicator - Only show if has audio and is muted */}
+      {hasAudio && isMuted && (
+        <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 px-3 py-1 rounded-full z-15">
           <span className="text-white text-xs flex items-center">
             <VolumeX className="h-3 w-3 mr-1" />
             Clique no ícone para ativar áudio
@@ -128,7 +155,7 @@ const FeaturedVideo = ({ videoUrl, title = "Vídeo em Destaque" }: FeaturedVideo
       )}
 
       {/* Video Title */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 z-10">
         <h3 className="text-white font-medium">{title}</h3>
       </div>
     </div>
