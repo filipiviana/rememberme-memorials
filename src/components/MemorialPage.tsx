@@ -9,7 +9,6 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import MemorialLogo from './MemorialLogo';
 import VideoThumbnail from './VideoThumbnail';
 import TributeWall from './TributeWall';
-import AutoplayAudioControls from './AutoplayAudioControls';
 import FeaturedVideo from './FeaturedVideo';
 import StarIcon from './icons/StarIcon';
 import CrossIcon from './icons/CrossIcon';
@@ -121,12 +120,6 @@ const MemorialPage = ({ memorial, onBack }: MemorialPageProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Autoplay Audio Controls */}
-      <AutoplayAudioControls 
-        audios={memorial.audios || []} 
-        autoplayEnabled={false}
-      />
-
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

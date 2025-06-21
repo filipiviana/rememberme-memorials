@@ -10,7 +10,6 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import MemorialLogo from '@/components/MemorialLogo';
 import VideoThumbnail from '@/components/VideoThumbnail';
 import TributeWall from '@/components/TributeWall';
-import AutoplayAudioControls from '@/components/AutoplayAudioControls';
 import FeaturedVideo from '@/components/FeaturedVideo';
 import StarIcon from '@/components/icons/StarIcon';
 import CrossIcon from '@/components/icons/CrossIcon';
@@ -164,12 +163,6 @@ const PublicMemorial = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Autoplay Audio Controls */}
-      <AutoplayAudioControls 
-        audios={memorial.audios || []} 
-        autoplayEnabled={false}
-      />
-
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
